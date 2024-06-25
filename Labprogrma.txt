@@ -1,0 +1,285 @@
+TW-1
+# Load necessary libraries
+install.packages(c("mlbench", "dplyr", "ggplot2", "reshape2", "caret"))
+library(mlbench)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(caret)
+
+# Load and inspect the data
+data("BostonHousing")
+housing <- BostonHousing
+str(housing)
+
+# Density Plot of Median Value House Price
+ggplot(housing, aes(x = medv)) +
+  stat_density() +
+  labs(x = "Median Value ($1000s)", y = "Density", title = "Density Plot of Median Value House Price in Boston") +
+  theme_minimal()
+
+# Predicted vs. Original Values Visualization
+housing %>%
+  select(crim, rm, age, rad, tax, lstat, medv) %>%
+  melt(id.vars = "medv") %>%
+  ggplot(aes(x = value, y = medv, colour = variable)) +
+  geom_point(alpha = 0.7) +
+  stat_smooth(colour = "black") +
+  facet_wrap(~variable, scales = "free", ncol = 2) +
+  labs(x = "Variable Value", y = "Median House Price ($1000s)") +
+  theme_minimal()
+
+# Train-Test Split
+set.seed(123)
+trainIndex <- createDataPartition(housing$medv, p = 0.75, list = FALSE)
+train <- housing[trainIndex, ]
+test <- housing[-trainIndex, ]
+
+# Fit a Linear Model
+first_lm <- lm(medv ~ crim + rm + tax + lstat, data = train)
+cat("First linear model has an r-squared value of", round(summary(first_lm)$r.squared, 3), "\n")
+
+# Improve the Model with Log Transformation
+second_lm <- lm(log(medv) ~ crim + rm + tax + lstat, data = train)
+cat("Second linear model has an r-squared value of", round(summary(second_lm)$r.squared, 3), "\n")
+
+# Check the mean of residuals
+cat("Mean of residuals:", abs(mean(second_lm$residuals)), "\n")
+
+# Predicted vs. Original Values Plot
+predicted <- predict(second_lm, newdata = test)
+results <- data.frame(predicted = exp(predicted), original = test$medv)
+ggplot(results, aes(x = predicted, y = original)) +
+  geom_point() +
+  stat_smooth() +
+  labs(x = "Predicted Values", y = "Original Values", title = "Predicted vs. Original Values") +
+  theme_minimal()
+
+
+******************************************************************************************************************
+TW-2
+# Install and load necessary packages
+install.packages("KernelKnn")
+library(KernelKnn)
+
+# Load data and preprocess
+data(ionosphere, package = 'KernelKnn')
+ionosphere = ionosphere[, -2]
+X = scale(ionosphere[, -ncol(ionosphere)])
+y = as.numeric(factor(ionosphere[, ncol(ionosphere)]))
+
+# Split the data into training and testing sets
+set.seed(123)
+spl_train = sample(seq_along(y), round(length(y) * 0.75))
+spl_test = setdiff(seq_along(y), spl_train)
+
+# Evaluation metric
+acc = function(y_true, preds) {
+  out = table(y_true, max.col(preds, ties.method = "random"))
+  sum(diag(out)) / sum(out)
+}
+
+# KNN with Euclidean distance
+preds_TEST = KernelKnn(X[spl_train, ], TEST_data = X[spl_test, ], y[spl_train], k = 5, 
+                       method = 'euclidean', regression = FALSE, Levels = unique(y))
+head(preds_TEST)
+
+# KNN with Canberra distance and Tricube kernel
+preds_TEST_tric = KernelKnn(X[spl_train, ], TEST_data = X[spl_test, ], y[spl_train], k = 10, 
+                            method = 'canberra', weights_function = 'tricube', regression = FALSE,
+                            Levels = unique(y))
+head(preds_TEST_tric)
+
+# Custom normal distribution kernel function
+norm_kernel = function(W) {
+  W = dnorm(W, mean = 0, sd = 1.0)
+  W / rowSums(W)
+}
+
+# KNN with Canberra distance and custom kernel
+preds_TEST_norm = KernelKnn(X[spl_train, ], TEST_data = X[spl_test, ], y[spl_train], k = 10, 
+                            method = 'canberra', weights_function = norm_kernel, regression = FALSE, 
+                            Levels = unique(y))
+head(preds_TEST_norm)
+
+# Cross-validation with Tricube kernel
+fit_cv_pair1 = KernelKnnCV(X, y, k = 10, folds = 5, method = 'canberra', 
+                           weights_function = 'tricube', regression = FALSE, 
+                           Levels = unique(y), threads = 5)
+str(fit_cv_pair1)
+
+# Cross-validation with Epanechnikov kernel
+fit_cv_pair2 = KernelKnnCV(X, y, k = 9, folds = 5, method = 'canberra',
+                           weights_function = 'epanechnikov', regression = FALSE,
+                           Levels = unique(y), threads = 5)
+str(fit_cv_pair2)
+
+# Calculate and print accuracy for both parameter sets
+calc_acc = function(fit_cv) {
+  unlist(lapply(1:length(fit_cv$preds), function(x) acc(y[fit_cv$folds[[x]]], fit_cv$preds[[x]])))
+}
+
+acc_pair1 = calc_acc(fit_cv_pair1)
+cat('Accuracy for params_pair1 is:', mean(acc_pair1), '\n')
+
+acc_pair2 = calc_acc(fit_cv_pair2)
+cat('Accuracy for params_pair2 is:', mean(acc_pair2), '\n')
+
+
+******************************************************************************************************************
+TW-3
+# Load necessary libraries
+install.packages("tm")
+install.packages("wordcloud")
+install.packages("e1071")
+library(tm)
+library(wordcloud)
+library(e1071)
+
+# Load data
+sms_spam_df <- read.csv("H:/6th/DSA/LAB/sms_spam.csv.csv", stringsAsFactors = FALSE)
+str(sms_spam_df)
+
+# Create and clean corpus
+sms_corpus <- VCorpus(VectorSource(sms_spam_df$text))
+clean_corpus <- tm_map(sms_corpus, content_transformer(tolower))
+clean_corpus <- tm_map(clean_corpus, removeNumbers)
+clean_corpus <- tm_map(clean_corpus, removePunctuation)
+clean_corpus <- tm_map(clean_corpus, removeWords, stopwords())
+clean_corpus <- tm_map(clean_corpus, stripWhitespace)
+
+# Inspect cleaned corpus
+inspect(clean_corpus[1:3])
+
+# Create document-term matrix
+sms_dtm <- DocumentTermMatrix(clean_corpus)
+str(sms_dtm)
+
+# Create wordclouds for spam and ham messages
+wordcloud(clean_corpus[which(sms_spam_df$category == "ham")], min.freq = 40)
+wordcloud(clean_corpus[which(sms_spam_df$category == "spam")], min.freq = 40)
+
+# Split data into training and test sets
+sms_raw_train <- sms_spam_df[1:4169,]
+sms_raw_test <- sms_spam_df[4170:5559,]
+sms_dtm_train <- sms_dtm[1:4169,]
+sms_dtm_test <- sms_dtm[4170:5559,]
+sms_corpus_train <- clean_corpus[1:4169]
+sms_corpus_test <- clean_corpus[4170:5559]
+
+# Create reduced DTM
+five_times_words <- findFreqTerms(sms_dtm_train, 5)
+sms_train <- DocumentTermMatrix(sms_corpus_train, control = list(dictionary = five_times_words))
+sms_test <- DocumentTermMatrix(sms_corpus_test, control = list(dictionary = five_times_words))
+
+# Convert counts to factors
+convert_count <- function(x) {
+  factor(ifelse(x > 0, "Yes", "No"), levels = c("No", "Yes"))
+}
+sms_train <- apply(sms_train, 2, convert_count)
+sms_test <- apply(sms_test, 2, convert_count)
+
+# Train Naive Bayes classifier and make predictions
+sms_classifier <- naiveBayes(sms_train, factor(sms_raw_train$category))
+sms_test_pred <- predict(sms_classifier, newdata = sms_test)
+
+# Evaluate accuracy
+conf_matrix <- table(sms_test_pred, sms_raw_test$category)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix) * 100
+accuracy
+
+
+******************************************************************************************************************
+TW-4
+#required packages
+#install.packages("caret")
+#install.packages("tidyr")
+
+# Attach the dataset to the environment
+data(iris)
+# Get help on the data
+help(iris)
+# Rename the data
+iris_dataset<-iris
+# View the data
+View(iris_dataset)
+
+# View the top few rows of the data in R console
+head(iris_dataset,7)
+
+# Assigning meaningful column names
+colnames(iris_dataset)<-c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width","Species")
+head(iris_dataset,5)
+
+# Load the Caret package which allows us to partition the data
+library(caret)
+# We use the dataset to create a partition (80% training 20% testing)
+index <- createDataPartition(iris_dataset$Species, p=0.80, list=FALSE)
+# select 20% of the data for testing
+testset <- iris_dataset[-index,]
+# select 80% of data to train the models
+trainset <- iris_dataset[index,]
+
+# Dimensions of the data
+dim(trainset)
+
+# Structure of the data
+str(trainset)
+
+# Summary of the data
+summary(trainset)
+
+# Levels of the prediction column
+levels(trainset$Species)
+
+## Histogram graph
+hist(trainset$Sepal.Width)
+
+## Box plot to understand how the distribution varies by class of flower
+par(mfrow=c(1,4))
+for(i in 1:4) {
+  boxplot(trainset[,i], main=names(trainset)[i])
+}
+#install.packages("ggplot2")
+# begin by loading the library
+library(ggplot2)
+# Scatter plot
+g <- ggplot(data=trainset, aes(x = Petal.Length, y = Petal.Width))
+print(g)
+g <-g + 
+  geom_point(aes(color=Species, shape=Species)) +
+  xlab("Petal Length") +
+  ylab("Petal Width") +
+  ggtitle("Petal Length-Width")+
+  geom_smooth(method="lm")
+print(g)
+## Box Plot
+box <- ggplot(data=trainset, aes(x=Species, y=Sepal.Length)) +
+  geom_boxplot(aes(fill=Species)) + 
+  ylab("Sepal Length") +
+  ggtitle("Iris Boxplot") +
+  stat_summary(fun.y=mean, geom="point", shape=5, size=4) 
+print(box)
+
+library(ggthemes)
+## Histogram
+histogram <- ggplot(data=iris, aes(x=Sepal.Width)) +
+  geom_histogram(binwidth=0.2, color="black", aes(fill=Species)) + 
+  xlab("Sepal Width") +  
+  ylab("Frequency") + 
+  ggtitle("Histogram of Sepal Width")+
+  theme_economist()
+print(histogram)
+
+## Faceting: Producing multiple charts in one plot
+library(ggthemes)
+facet <- ggplot(data=trainset, aes(Sepal.Length, y=Sepal.Width, color=Species))+
+  geom_point(aes(shape=Species), size=1.5) + 
+  geom_smooth(method="lm") +
+  xlab("Sepal Length") +
+  ylab("Sepal Width") +
+  ggtitle("Faceting") +
+  theme_fivethirtyeight() +
+  facet_grid(. ~ Species) # Along rows
+print(facet)
+
