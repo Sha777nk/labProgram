@@ -1,0 +1,163 @@
+TW 1 
+
+def classify_triangle(a, b, c):
+    # Check if it forms a triangle
+    if a + b <= c or a + c <= b or b + c <= a:
+        return "Not a triangle"
+    # Check if it's an equilateral triangle
+    elif a == b == c:
+        return "Equilateral triangle"
+    # Check if it's an isosceles triangle
+    elif a == b or a == c or b == c:
+        return "Isosceles triangle"
+    # If it's not equilateral or isosceles, it must be scalene
+    else:
+        return "Scalene triangle"
+
+# Test cases
+test_cases = [
+    (3, 4, 5),      # Scalene triangle
+    (5, 5, 5),      # Equilateral triangle
+    (4, 4, 6),      # Isosceles triangle
+    (1, 2, 3),      # Not a triangle
+    (7, 5, 2),      # Not a triangle
+]
+
+# Execute test cases
+for sides in test_cases:
+    a, b, c = sides
+    result = classify_triangle(a, b, c)
+    print(f"Sides: {a}, {b}, {c} --> {result}")
+
+*********************************************************************************************************************************************************************************
+TW2
+
+def classify_triangle(a, b, c):
+    # Check if it forms a triangle
+    if a + b <= c or a + c <= b or b + c <= a:
+        return "Not a triangle"
+    # Check if it's an equilateral triangle
+    elif a == b == c:
+        return "Equilateral triangle"
+    # Check if it's an isosceles triangle
+    elif a == b or a == c or b == c:
+        return "Isosceles triangle"
+    # If it's not equilateral or isosceles, it must be scalene
+    else:
+        return "Scalene triangle"
+
+# Test cases based on boundary-value analysis
+test_cases = [
+    (1, 1, 1),      # Equilateral triangle (minimum value)
+    (10, 10, 10),   # Equilateral triangle (maximum value)
+    (1, 1, 2),      # Isosceles triangle (minimum value)
+    (10, 10, 5),    # Isosceles triangle (maximum value)
+    (1, 2, 3),      # Scalene triangle (minimum value)
+    (9, 7, 8),      # Scalene triangle (maximum value)
+    (1, 1, 3),      # Not a triangle (minimum value)
+    (10, 10, 20)    # Not a triangle (maximum value)
+]
+
+# Execute test cases
+for sides in test_cases:
+    a, b, c = sides
+    result = classify_triangle(a, b, c)
+    print(f"Sides: {a}, {b}, {c} --> {result}")
+
+
+
+
+
+
+
+
+
+
+
+
+*****************************************************************************************************************************************
+TW3
+
+def triangle_type(a, b, c):
+    # Check if sides form a triangle
+    if a + b <= c or a + c <= b or b + c <= a:
+        return "Not a triangle"
+    
+    # Check if equilateral
+    if a == b == c:
+        return "Equilateral"
+    # Check if isosceles
+    elif a == b or b == c or a == c:
+        return "Isosceles"
+    # Check if scalene
+    else:
+        return "Scalene"
+
+# Test cases based on equivalence class partitioning with names
+test_cases = [
+    ("Equilateral", 3, 3, 3),  # All sides are equal
+    ("Isosceles", 3, 3, 2),     # Two sides are equal
+    ("Scalene", 3, 4, 5),       # No sides are equal
+    ("Not a triangle", 10, 1, 1),  # Sum of two sides <= third side
+    ("Not a triangle", 7, 8, 15),  # Sum of two sides <= third side
+]
+
+# Execute test cases and print results
+for ec_name, *test in test_cases:
+    result = triangle_type(*test)
+    print(f"Equivalence Class: {ec_name}, Sides: {test}, Triangle Type: {result}")
+
+
+
+****************************************************************************************************************************************************************************************
+TW 4
+# Initialize prices of lock, stock, and barrel
+lock_price = 45
+stock_price = 30
+barrel_price = 25
+
+# Initialize production limits
+lock_limit = 70
+stock_limit = 80
+barrel_limit = 90
+
+# Initialize commission levels
+commission_level_1 = 0.10
+commission_level_2 = 0.15
+commission_level_3 = 0.20
+
+# Define two sets of sales data
+sales_data = [
+    {"locks_sold": 60, "stocks_sold": 70, "barrels_sold": 80},
+    {"locks_sold": 80, "stocks_sold": 60, "barrels_sold": 70}
+]
+
+# Print header for the table
+print("Sales Report:")
+print("{:<10} {:<10} {:<10} {:<10} {:<15} {:<15}".format("Locks", "Stocks", "Barrels", "Total Sales", "Commission ($)", "Commission (%)"))
+print("-" * 70)
+
+# Calculate and print results for each set of sales data
+for data in sales_data:
+    locks_sold = data["locks_sold"]
+    stocks_sold = data["stocks_sold"]
+    barrels_sold = data["barrels_sold"]
+
+    # Calculate total sales
+    total_sales = (locks_sold * lock_price) + (stocks_sold * stock_price) + (barrels_sold * barrel_price)
+
+    # Calculate commission 
+    if total_sales <= 1000:
+        commission = total_sales * commission_level_1
+    elif total_sales <= 1800:
+        commission = (1000 * commission_level_1) + ((total_sales - 1000) * commission_level_2)
+    else:
+        commission = (1000 * commission_level_1) + (800 * commission_level_2) + ((total_sales - 1800) * commission_level_3)
+
+    # Calculate commission percentage
+    commission_percentage = (commission / total_sales) * 100 if total_sales != 0 else 0
+
+    # Print results in tabular format
+    print("{:<10} {:<10} {:<10} ${:<10} ${:<15.2f} {:<15.2f}%".format(locks_sold, stocks_sold, barrels_sold, total_sales, commission, commission_percentage))
+
+*******************************************************************************************************************************************************************************************************************

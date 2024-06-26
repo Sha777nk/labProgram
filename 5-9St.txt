@@ -1,0 +1,161 @@
+
+TW 5
+# Initialize prices of lock, stock, and barrel
+lock_price = 45
+stock_price = 30
+barrel_price = 25
+
+# Initialize commission levels
+commission_level_1 = 0.10
+commission_level_2 = 0.15
+commission_level_3 = 0.20
+
+def calculate_total_sales(locks_sold, stocks_sold, barrels_sold):
+    total_sales = (locks_sold * lock_price) + (stocks_sold * stock_price) + (barrels_sold * barrel_price)
+    return total_sales
+
+def calculate_commission(total_sales):
+    if total_sales <= 1000:
+        commission = total_sales * commission_level_1
+    elif total_sales <= 1800:
+        commission = (1000 * commission_level_1) + ((total_sales - 1000) * commission_level_2)
+    else:
+        commission = (1000 * commission_level_1) + (800 * commission_level_2) + ((total_sales - 1800) * commission_level_3)
+    return commission
+
+# Test cases
+test_cases = [
+    {"locks_sold": 60, "stocks_sold": 70, "barrels_sold": 80},
+    {"locks_sold": 80, "stocks_sold": 60, "barrels_sold": 70},
+    {"locks_sold": 90, "stocks_sold": 90, "barrels_sold": 90}
+]
+
+# Execute test cases and print results
+print("Test Results:")
+print("{:<10} {:<15} {:<15} {:<15}".format("Locks", "Stocks", "Barrels", "Commission"))
+print("-" * 55)
+for case in test_cases:
+    locks_sold = case["locks_sold"]
+    stocks_sold = case["stocks_sold"]
+    barrels_sold = case["barrels_sold"]
+    
+    total_sales = calculate_total_sales(locks_sold, stocks_sold, barrels_sold)
+    commission = calculate_commission(total_sales)
+    
+    print("{:<10} {:<15} {:<15} ${:.2f}".format(locks_sold, stocks_sold, barrels_sold, commission)) 
+*******************************************************************************************************************************************************************************************
+
+TW 6
+def binary_search(arr, target):
+    low = 0
+    high = len(arr) - 1
+    
+    while low <= high:
+        mid = (low + high) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1
+
+# Test cases
+arr1 = [1, 2, 3, 4, 5]
+arr2 = [1, 3, 5, 7, 9]
+arr3 = [2, 4, 6, 8, 10]
+
+targets = [1, 3, 5, 7, 9, 11]
+
+# Execute test cases and print results
+for arr in [arr1, arr2, arr3]:
+    print("Array:", arr)
+    for target in targets:
+        index = binary_search(arr, target)
+        if index != -1:
+            print(f"Target {target} found at index {index}")
+        else:
+            print(f"Target {target} not found in the array")
+    print()
+**********************************************************************************************************************************************************************************
+
+TW 7
+def quicksort(array): if len(array) < 2:
+return array else:
+pivot = array[0]
+less = [i for i in array[1:] if i <= pivot] greater = [i for i in array[1:] if i > pivot]
+return quicksort(less) + [pivot] + quicksort(greater) print(quicksort([10, 5, 2, 3]))
+
+
+**********************************************************************************************************************************************************************************
+
+TW 8
+
+per = float(input())
+
+if per < 0 or per > 100:
+    print("Invalid percentage, enter again")
+else:
+    if per >= 90:
+        grade = 'A'
+    elif per >= 80:
+        grade = 'B'
+    elif per >= 70:
+        grade = 'C'
+    elif per >= 60:
+        grade = 'D'
+    else:
+        grade = 'E'
+
+    if grade == 'A':
+        print("EXCELLENT")
+    elif grade == 'B':
+        print("Very Good")
+    elif grade == 'C':
+        print("Good")
+    elif grade == 'D':
+        print("Above Average")
+    else:
+        print("Satisfactory")
+
+    print(f"The percentage = {per} and grade is {grade}")
+
+*********************************************************************************************************************************************************************************************
+
+TW 9
+
+def nextDate(month, day, year):
+    if month == 2:
+        if day < 28:
+            return month, day + 1, year
+        elif day == 28:
+            if year % 4 == 0:
+                return month, day + 1, year
+            else:
+                return 3, 1, year
+        else:
+            return 3, day, year
+    elif month == 4 or month == 6 or month == 9 or month == 11:
+        if day < 30:
+            return month, day + 1, year
+        else:
+            return month + 1, 1, year
+    else:
+        if day < 31:
+            return month, day + 1, year
+        else:
+            if month == 12:
+                return 1, 1, year + 1
+            else:
+                return month + 1, 1, year
+            
+def main():
+    day = int(input("Enter day: "))
+    month = int(input("Enter month: "))
+    year = int(input("Enter year: "))
+    
+    month, day, year = nextDate(month, day, year)
+    print("Next date: ", day, "/", month, "/", year)
+    
+if __name__ == "__main__":
+    main()
